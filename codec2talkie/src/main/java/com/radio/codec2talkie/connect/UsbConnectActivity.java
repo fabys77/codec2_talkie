@@ -206,7 +206,7 @@ public class UsbConnectActivity extends AppCompatActivity {
                                 port.setFlowControl(UsbSerialPort.FlowControl.RTS_CTS);
                                 break;
                             case "Software":
-                                port.ssetFlowControl(UsbSerialPort.FlowControl.XON_XOFF);
+                                port.setFlowControl(UsbSerialPort.FlowControl.XON_XOFF);
                                 break;
                             case "None":
                             default:
