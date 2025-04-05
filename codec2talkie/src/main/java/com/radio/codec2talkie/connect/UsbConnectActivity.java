@@ -92,14 +92,14 @@ public class UsbConnectActivity extends AppCompatActivity {
             if (_usbPort != null) {
                 switch (flowControlMethod) {
                     case "Hardware":
-                        _usbPort.setFlowControlMode(UsbSerialPort.FLOWCONTROL_RTSCTS);
+                        _usbPort.setFlowControlMode(FLOWCONTROL_RTSCTS);
                         break;
                     case "Software":
-                        _usbPort.setFlowControlMode(UsbSerialPort.FLOWCONTROL_XONXOFF);
+                        _usbPort.setFlowControlMode(FLOWCONTROL_XONXOFF);
                         break;
                     case "None":
                     default:
-                        _usbPort.setFlowControlMode(UsbSerialPort.FLOWCONTROL_NONE);
+                        _usbPort.setFlowControlMode(FLOWCONTROL_NONE);
                         break;
                 }
             }
@@ -207,15 +207,14 @@ public class UsbConnectActivity extends AppCompatActivity {
                         String flowControlMethod = sharedPreferences.getString(PreferenceKeys.PORTS_USB_FLOW_CONTROL, "None");
                         switch (flowControlMethod) {
                             case "Hardware":
-                                port.setFlowControl(FLOWCONTROL_RTSCTS);
-                                port.setFlowControlMode(UsbSerialPort.FLOWCONTROL_RTSCTS);
+                                port.setFlowControlMode(FLOWCONTROL_RTSCTS);
                                 break;
                             case "Software":
-                                port.setFlowControlMode(UsbSerialPort.FLOWCONTROL_XONXOFF);
+                                port.setFlowControlMode(FLOWCONTROL_XONXOFF);
                                 break;
                             case "None":
                             default:
-                                port.setFlowControlMode(UsbSerialPort.FLOWCONTROL_NONE);
+                                port.setFlowControlMode(FLOWCONTROL_NONE);
                                 break;
                         }
                     } catch (IOException e) {
