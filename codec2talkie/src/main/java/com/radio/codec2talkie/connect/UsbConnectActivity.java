@@ -72,12 +72,36 @@ public class UsbConnectActivity extends AppCompatActivity {
         _enableDtr = sharedPreferences.getBoolean(PreferenceKeys.PORTS_USB_DTR, false);
         _enableRts = sharedPreferences.getBoolean(PreferenceKeys.PORTS_USB_RTS, false);
 
+        String flowControlMethod = sharedPreferences.getString(PreferenceKeys.PORTS_USB_FLOW_CONTROL, "None");
+        configureFlowControl(flowControlMethod);
+
         ProgressBar progressBarUsb = findViewById(R.id.progressBarUsb);
         progressBarUsb.setVisibility(View.VISIBLE);
         ObjectAnimator.ofInt(progressBarUsb, "progress", 10)
                 .setDuration(300)
                 .start();
         connectUsb();
+    }
+
+    private void configureFlowControl(String flowControlMethod) {
+        try {
+            if (_usbPort != null) {
+                switch (flowControlMethod) {
+                    case "Hardware":
+                        _usbPort.setFlowControl(UsbSerialPort.FLOWCONTROL_RTSCTS);
+                        break;
+                    case "Software":
+                        _usbPort.setFlowControl(UsbSerialPort.FLOWCONTROL_XONXOFF);
+                        break;
+                    case "None":
+                    default:
+                        _usbPort.setFlowControl(UsbSerialPort.FLOWCONTROL_NONE);
+                        break;
+                }
+            }
+        } catch (IOException e) {
+            Log.e(TAG, "Failed to set flow control: " + e.getMessage());
+        }
     }
 
     @Override
@@ -173,6 +197,22 @@ public class UsbConnectActivity extends AppCompatActivity {
                         port.setParameters(_baudRate, _dataBits, _stopBits, _parity);
                         port.setDTR(_enableDtr);
                         port.setRTS(_enableRts);
+
+                        // Apply flow control method
+                        SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
+                        String flowControlMethod = sharedPreferences.getString(PreferenceKeys.PORTS_USB_FLOW_CONTROL, "None");
+                        switch (flowControlMethod) {
+                            case "Hardware":
+                                port.setFlowControl(UsbSerialPort.FLOWCONTROL_RTSCTS);
+                                break;
+                            case "Software":
+                                port.setFlowControl(UsbSerialPort.FLOWCONTROL_XONXOFF);
+                                break;
+                            case "None":
+                            default:
+                                port.setFlowControl(UsbSerialPort.FLOWCONTROL_NONE);
+                                break;
+                        }
                     } catch (IOException e) {
                         e.printStackTrace();
                         Log.e(TAG, "Cannot set port parameters");

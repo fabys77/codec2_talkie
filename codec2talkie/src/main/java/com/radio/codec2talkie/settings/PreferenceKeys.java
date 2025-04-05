@@ -9,6 +9,7 @@ public final class PreferenceKeys {
     public static String PORTS_USB_PARITY = "ports_usb_parity";
     public static String PORTS_USB_DTR = "ports_usb_dtr";
     public static String PORTS_USB_RTS = "ports_usb_rts";
+    public static String PORTS_USB_FLOW_CONTROL = "ports_usb_flow_control";
     public static String PORTS_BT_CLIENT_NAME = "ports_bt_client_name";
 
     public static String PORTS_TCP_IP_ADDRESS = "ports_tcp_ip_address";
