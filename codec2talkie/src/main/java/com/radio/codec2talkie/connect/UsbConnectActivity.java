@@ -199,7 +199,7 @@ public class UsbConnectActivity extends AppCompatActivity {
                         port.setRTS(_enableRts);
 
                         // Apply flow control method
-                        SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
+                        SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(UsbConnectActivity.this);
                         String flowControlMethod = sharedPreferences.getString(PreferenceKeys.PORTS_USB_FLOW_CONTROL, "None");
                         switch (flowControlMethod) {
                             case "Hardware":
