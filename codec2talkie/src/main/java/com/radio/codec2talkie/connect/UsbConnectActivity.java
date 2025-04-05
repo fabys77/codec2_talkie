@@ -46,10 +46,6 @@ public class UsbConnectActivity extends AppCompatActivity {
     private static final int USB_STOP_BITS_DEFAULT = UsbSerialPort.STOPBITS_1;
     private static final int USB_PARITY_DEFAULT = UsbSerialPort.PARITY_NONE;
 
-    private static final int FLOWCONTROL_NONE = 0;
-    private static final int FLOWCONTROL_RTSCTS = 1;
-    private static final int FLOWCONTROL_XONXOFF = 2;
-
     private int _baudRate;
     private int _dataBits;
     private int _stopBits;
@@ -92,14 +88,14 @@ public class UsbConnectActivity extends AppCompatActivity {
             if (_usbPort != null) {
                 switch (flowControlMethod) {
                     case "Hardware":
-                        _usbPort.setFlowControlMode(FLOWCONTROL_RTSCTS);
+                        _usbPort.setFlowControl(UsbSerialPort.FlowControl.RTS_CTS);
                         break;
                     case "Software":
-                        _usbPort.setFlowControlMode(FLOWCONTROL_XONXOFF);
+                        _usbPort.setFlowControl(UsbSerialPort.FlowControl.XON_XOFF);
                         break;
                     case "None":
                     default:
-                        _usbPort.setFlowControlMode(FLOWCONTROL_NONE);
+                        _usbPort.setFlowControl(UsbSerialPort.FlowControl.NONE);
                         break;
                 }
             }
@@ -207,14 +203,14 @@ public class UsbConnectActivity extends AppCompatActivity {
                         String flowControlMethod = sharedPreferences.getString(PreferenceKeys.PORTS_USB_FLOW_CONTROL, "None");
                         switch (flowControlMethod) {
                             case "Hardware":
-                                port.setFlowControlMode(FLOWCONTROL_RTSCTS);
+                                port.setFlowControl(UsbSerialPort.FlowControl.RTS_CTS);
                                 break;
                             case "Software":
-                                port.setFlowControlMode(FLOWCONTROL_XONXOFF);
+                                port.ssetFlowControl(UsbSerialPort.FlowControl.XON_XOFF);
                                 break;
                             case "None":
                             default:
-                                port.setFlowControlMode(FLOWCONTROL_NONE);
+                                port.setFlowControl(UsbSerialPort.FlowControl.NONE);
                                 break;
                         }
                     } catch (IOException e) {
