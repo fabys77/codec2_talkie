@@ -46,6 +46,10 @@ public class UsbConnectActivity extends AppCompatActivity {
     private static final int USB_STOP_BITS_DEFAULT = UsbSerialPort.STOPBITS_1;
     private static final int USB_PARITY_DEFAULT = UsbSerialPort.PARITY_NONE;
 
+    private static final int FLOWCONTROL_NONE = 0;
+    private static final int FLOWCONTROL_RTSCTS = 1;
+    private static final int FLOWCONTROL_XONXOFF = 2;
+
     private int _baudRate;
     private int _dataBits;
     private int _stopBits;
@@ -203,14 +207,14 @@ public class UsbConnectActivity extends AppCompatActivity {
                         String flowControlMethod = sharedPreferences.getString(PreferenceKeys.PORTS_USB_FLOW_CONTROL, "None");
                         switch (flowControlMethod) {
                             case "Hardware":
-                                port.setFlowControl(UsbSerialPort.FLOWCONTROL_RTSCTS);
+                                port.setFlowControl(FLOWCONTROL_RTSCTS);
                                 break;
                             case "Software":
-                                port.setFlowControl(UsbSerialPort.FLOWCONTROL_XONXOFF);
+                                port.setFlowControl(FLOWCONTROL_XONXOFF);
                                 break;
                             case "None":
                             default:
-                                port.setFlowControl(UsbSerialPort.FLOWCONTROL_NONE);
+                                port.setFlowControl(FLOWCONTROL_NONE);
                                 break;
                         }
                     } catch (IOException e) {
