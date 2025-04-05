@@ -92,14 +92,14 @@ public class UsbConnectActivity extends AppCompatActivity {
             if (_usbPort != null) {
                 switch (flowControlMethod) {
                     case "Hardware":
-                        _usbPort.setFlowControl(FLOWCONTROL_RTSCTS);
+                        _usbPort.setFlowControlMode(UsbSerialPort.FLOWCONTROL_RTSCTS);
                         break;
                     case "Software":
-                        _usbPort.setFlowControl(FLOWCONTROL_XONXOFF);
+                        _usbPort.setFlowControlMode(UsbSerialPort.FLOWCONTROL_XONXOFF);
                         break;
                     case "None":
                     default:
-                        _usbPort.setFlowControl(FLOWCONTROL_NONE);
+                        _usbPort.setFlowControlMode(UsbSerialPort.FLOWCONTROL_NONE);
                         break;
                 }
             }
@@ -208,13 +208,14 @@ public class UsbConnectActivity extends AppCompatActivity {
                         switch (flowControlMethod) {
                             case "Hardware":
                                 port.setFlowControl(FLOWCONTROL_RTSCTS);
+                                port.setFlowControlMode(UsbSerialPort.FLOWCONTROL_RTSCTS);
                                 break;
                             case "Software":
-                                port.setFlowControl(FLOWCONTROL_XONXOFF);
+                                port.setFlowControlMode(UsbSerialPort.FLOWCONTROL_XONXOFF);
                                 break;
                             case "None":
                             default:
-                                port.setFlowControl(FLOWCONTROL_NONE);
+                                port.setFlowControlMode(UsbSerialPort.FLOWCONTROL_NONE);
                                 break;
                         }
                     } catch (IOException e) {
