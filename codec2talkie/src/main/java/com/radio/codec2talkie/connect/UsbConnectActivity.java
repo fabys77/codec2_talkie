@@ -92,14 +92,14 @@ public class UsbConnectActivity extends AppCompatActivity {
             if (_usbPort != null) {
                 switch (flowControlMethod) {
                     case "Hardware":
-                        _usbPort.setFlowControl(UsbSerialPort.FLOWCONTROL_RTSCTS);
+                        _usbPort.setFlowControl(FLOWCONTROL_RTSCTS);
                         break;
                     case "Software":
-                        _usbPort.setFlowControl(UsbSerialPort.FLOWCONTROL_XONXOFF);
+                        _usbPort.setFlowControl(FLOWCONTROL_XONXOFF);
                         break;
                     case "None":
                     default:
-                        _usbPort.setFlowControl(UsbSerialPort.FLOWCONTROL_NONE);
+                        _usbPort.setFlowControl(FLOWCONTROL_NONE);
                         break;
                 }
             }
