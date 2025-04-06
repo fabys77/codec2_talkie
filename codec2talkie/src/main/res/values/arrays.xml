@@ -608,4 +608,15 @@
         <item>5</item>
         <item>6</item>
     </string-array>
+
+    <string-array name="flow_control_methods">
+        <item>None</item>
+        <item>Hardware (RTS/CTS)</item>
+        <item>Software (XON/XOFF)</item>
+    </string-array>
+    <string-array name="flow_control_values">
+        <item>None</item>
+        <item>Hardware</item>
+        <item>Software</item>
+    </string-array>
 </resources>

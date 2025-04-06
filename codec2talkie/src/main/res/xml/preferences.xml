@@ -121,6 +121,17 @@
     </PreferenceCategory>
 
     <PreferenceCategory
+        android:title="USB Port Settings">
+        <ListPreference
+            android:key="ports_usb_flow_control"
+            android:title="Flow Control"
+            android:summary="Select the flow control method for the USB port"
+            android:entries="@array/flow_control_methods"
+            android:entryValues="@array/flow_control_values"
+            android:defaultValue="None" />
+    </PreferenceCategory>
+
+    <PreferenceCategory
         app:key="codec_category"
         app:title="@string/codec_category_title">
 
