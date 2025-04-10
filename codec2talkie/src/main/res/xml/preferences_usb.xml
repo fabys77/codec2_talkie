@@ -41,6 +41,16 @@
             app:summary="%s">
         </ListPreference>
 
+        <ListPreference
+            app:key="ports_usb_flow_control"
+            app:title="Flow Control"
+            app:summary="Select the flow control method for the USB port"
+            app:entries="@array/flow_control_methods"
+            app:entryValues="@array/flow_control_values"
+            app:defaultValue="None" />
+    </PreferenceCategory>
+
+
         <CheckBoxPreference
             app:key="ports_usb_dtr"
             app:title="@string/usb_dtr_title"
