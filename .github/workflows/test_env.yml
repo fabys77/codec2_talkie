@@ -39,12 +39,10 @@ jobs:
           --ks keystore.jks \
           --ks-key-alias ${{ secrets.KEY_ALIAS }} \
           --ks-pass env:KEYSTORE_PASSWORD \
+          --key-pass env:KEY_PASSWORD \
+          codec2talkie/build/outputs/apk/release/codec2talkie-release-unsigned.apk \
           --out codec2talkie/build/outputs/apk/release/codec2talkie-release.apk \
-          codec2talkie/build/outputs/apk/release/codec2talkie-release-unsigned.apk
-      env:
-        KEYSTORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
-        KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
-        
+                  
     - name: Verify APK
       run: $ANDROID_HOME/build-tools/31.0.0/apksigner verify codec2talkie/build/outputs/apk/release/codec2talkie-release.apk
         
