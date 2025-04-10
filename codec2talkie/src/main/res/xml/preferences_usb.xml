@@ -48,7 +48,7 @@
             app:entries="@array/flow_control_methods"
             app:entryValues="@array/flow_control_values"
             app:defaultValue="None" />
-    </PreferenceCategory>
+        </ListPreference>
 
 
         <CheckBoxPreference
