@@ -39,7 +39,6 @@ jobs:
           --ks keystore.jks \
           --ks-key-alias ${{ secrets.KEY_ALIAS }} \
           --ks-pass env:KEYSTORE_PASSWORD \
-          --key-pass env:KEY_PASSWORD \
           codec2talkie/build/outputs/apk/release/codec2talkie-release-unsigned.apk \
           --out codec2talkie/build/outputs/apk/release/codec2talkie-release.apk \
       env:
