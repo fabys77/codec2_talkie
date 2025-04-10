@@ -38,8 +38,7 @@ jobs:
         $ANDROID_HOME/build-tools/31.0.0/apksigner sign \
           --ks keystore.jks \
           --ks-key-alias ${{ secrets.KEY_ALIAS }} \
-          --ks-pass ${{ secrets.KEYSTORE_PASSWORD }} \
-          --key-pass ${{ secrets.KEY_PASSWORD }} \
+          --ks-pass env:KEYSTORE_PASSWORD \
           --out codec2talkie/build/outputs/apk/release/codec2talkie-release.apk \
           codec2talkie/build/outputs/apk/release/codec2talkie-release-unsigned.apk
       env:
