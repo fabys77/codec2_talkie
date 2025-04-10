@@ -44,7 +44,7 @@
         <ListPreference
             app:key="ports_usb_flow_control"
             app:title="Flow Control"
-            app:summary="Select the flow control method for the USB port"
+            app:summary="%s"
             app:entries="@array/flow_control_methods"
             app:entryValues="@array/flow_control_values"
             app:defaultValue="None">
