@@ -35,15 +35,15 @@ public class DebugTools {
 
     public static String byteBitsToFlatString(byte[] bytesAsBits) {
         StringBuilder s = new StringBuilder();
-        for (int i = 0; i < bytesAsBits.length; i++) {
-            s.append(bytesAsBits[i]);
+        for (byte bytesAsBit : bytesAsBits) {
+            s.append(bytesAsBit);
         }
         return s.toString();
     }
 
     public static boolean isPrintableAscii(byte value)
     {
-        return (value >= 32 ) && (value < 127);
+        return (value >= 32) && (value < 127);
     }
 
     public static String bytesToDebugString(byte[] buffer)
@@ -57,7 +57,7 @@ public class DebugTools {
             }
             else
             {
-                builder.append(String.format("<0x%x>", b));
+                builder.append(String.format("\\x%x", b));
             }
         }
         return builder.toString();

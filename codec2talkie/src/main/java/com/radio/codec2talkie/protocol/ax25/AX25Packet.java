@@ -32,13 +32,13 @@ public class AX25Packet {
         if (data == null) return;
         // lora text packet with 0x3c,0xff,0x01 prefix
         if (data.length > 3 && data[0] == (byte)0x3c && data[1] == (byte)0xff && data[2] == (byte)0x01) {
-            String rawText = new String(Arrays.copyOfRange(data, 3, data.length), StandardCharsets.US_ASCII);
+            String rawText = new String(Arrays.copyOfRange(data, 3, data.length), StandardCharsets.ISO_8859_1);
             AprsIsData textPacket = AprsIsData.fromString(rawText);
             if (textPacket != null) {
                 src = textPacket.src;
                 dst = textPacket.dst;
                 digipath = textPacket.rawDigipath;
-                rawData = textPacket.data.getBytes(StandardCharsets.US_ASCII);
+                rawData = textPacket.data.getBytes(StandardCharsets.ISO_8859_1);
                 isAudio = false;
                 isValid = true;
                 return;
@@ -70,7 +70,7 @@ public class AX25Packet {
                     buffer.get(rptBytes);
                     rptCallsign.fromBinary(rptBytes);
                     if (!rptCallsign.isValid) return;
-                    rptBuilder.append(rptCallsign.toString());
+                    rptBuilder.append(rptCallsign);
                     if (rptCallsign.isLast) break;
                     rptBuilder.append(',');
                 }
@@ -98,7 +98,7 @@ public class AX25Packet {
     }
 
     public byte[] toTextBinary() {
-        byte[] packetContent = toString().getBytes(StandardCharsets.US_ASCII);
+        byte[] packetContent = toString().getBytes(StandardCharsets.ISO_8859_1);
         // lora aprs prefix 0x3c,0xff,0x01
         ByteBuffer textPacketBuffer = ByteBuffer.allocateDirect(packetContent.length + 3);
         textPacketBuffer.put((byte)0x3c).put((byte)0xff).put((byte)0x01);
@@ -115,7 +115,7 @@ public class AX25Packet {
         if (digipath != null)
             rptCallsigns = digipath.replaceAll(" ", "").split(",");
         boolean hasRtpCallsigns = rptCallsigns.length > 0 &&
-                !(rptCallsigns.length == 1 && rptCallsigns[0].length() == 0);
+                !(rptCallsigns.length == 1 && rptCallsigns[0].isEmpty());
         // dst
         AX25Callsign dstCallsign = new AX25Callsign();
         dstCallsign.fromString(dst);
@@ -130,7 +130,7 @@ public class AX25Packet {
         // digipath
         for (int i = 0; i < rptCallsigns.length; i++) {
             String callsign = rptCallsigns[i];
-            if (callsign.length() == 0) continue;
+            if (callsign.isEmpty()) continue;
             AX25Callsign digiCallsign = new AX25Callsign();
             digiCallsign.fromString(callsign);
             if (!digiCallsign.isValid) return null;
@@ -167,7 +167,7 @@ public class AX25Packet {
             if (rptCallsign.isValid) {
                 if (!isDigiRepeated && rptCallsign.digiRepeat()) {
                     isDigiRepeated = true;
-                    buf.append(rptCallsign.toString());
+                    buf.append(rptCallsign);
                 } else {
                     buf.append(digiPaths[i]);
                 }
@@ -188,6 +188,7 @@ public class AX25Packet {
         String info = DebugTools.bytesToDebugString(rawData);
         if (!isAudio) {
             info = DebugTools.bytesToDebugString(TextTools.stripNulls(rawData));
+            //info = new String(TextTools.stripNulls(rawData), StandardCharsets.ISO_8859_1);
         }
         return String.format("%s>%s%s:%s", src, dst, path, info);
     }

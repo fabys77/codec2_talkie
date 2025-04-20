@@ -2,10 +2,10 @@ package com.radio.codec2talkie.protocol.aprs;
 
 import android.util.Log;
 
-import com.radio.codec2talkie.protocol.Aprs;
 import com.radio.codec2talkie.protocol.aprs.tools.AprsTools;
 import com.radio.codec2talkie.protocol.message.TextMessage;
 import com.radio.codec2talkie.protocol.position.Position;
+import com.radio.codec2talkie.tools.DeviceIdTools;
 import com.radio.codec2talkie.tools.MathTools;
 import com.radio.codec2talkie.tools.TextTools;
 import com.radio.codec2talkie.tools.UnitTools;
@@ -67,6 +67,7 @@ public class AprsDataPositionReport implements AprsData {
         _position.digipath = digipath;
         _position.status = "";
         _position.comment = "";
+        _position.deviceIdDescription = "";
         _position.privacyLevel = 0;
         if ((infoData[0] == '/' || infoData[0] == '\\') && fromCompressedBinary(infoData)) {
             _position.isCompressed = true;
@@ -75,6 +76,10 @@ public class AprsDataPositionReport implements AprsData {
         } else if (fromUncompressedBinary(infoData)) {
             _position.isCompressed = false;
             _isValid = true;
+        }
+        AprsCallsign dstAprsCallsign = new AprsCallsign(dstCallsign);
+        if (dstAprsCallsign.isSoftware()) {
+            _position.deviceIdDescription = DeviceIdTools.getDeviceDescription(dstCallsign);
         }
         if (_isValid)
             _position.maidenHead = UnitTools.decimalToMaidenhead(_position.latitude, _position.longitude);
@@ -108,7 +113,7 @@ public class AprsDataPositionReport implements AprsData {
         } else {
             buffer.put(" sT".getBytes());
         }
-        buffer.put(position.comment.getBytes());
+        buffer.put(position.comment.getBytes(StandardCharsets.UTF_8));
         // return
         buffer.flip();
         byte [] binaryInfo = new byte[buffer.remaining()];
@@ -130,7 +135,7 @@ public class AprsDataPositionReport implements AprsData {
             buffer.put(String.format(Locale.US, "/A=%06d",
                     UnitTools.metersToFeet(position.altitudeMeters)).getBytes());
         }
-        buffer.put(position.comment.getBytes());
+        buffer.put(position.comment.getBytes(StandardCharsets.UTF_8));
         // return
         buffer.flip();
         byte [] binaryInfo = new byte[buffer.remaining()];
@@ -175,8 +180,9 @@ public class AprsDataPositionReport implements AprsData {
         _position.latitude = getUncompressedCoordinate(latitude.getBytes(), true);
         if (longitude == null) return false;
         _position.longitude = getUncompressedCoordinate(longitude.getBytes(), false);
-        if (comment != null)
+        if (comment != null) {
             _position.comment = TextTools.stripNulls(comment);
+        }
 
         _position.hasSpeed = false;
         _position.hasBearing = false;
@@ -217,6 +223,9 @@ public class AprsDataPositionReport implements AprsData {
             // TODO, implement
             double rangeMiles = 2 * Math.pow(1.08, sByte);
         }
+
+        // sometimes altitude is coming from comment event for compressed packets
+        _position.comment = parseAltitude(_position.comment);
         return true;
     }
 
@@ -230,9 +239,9 @@ public class AprsDataPositionReport implements AprsData {
         Pattern latLonPattern = Pattern.compile(
                 "^" +
                 "(?:.*)?" +                         // optional timestamp
-                "([\\d ]{4}[.][\\d ]{2})(N|S)" +    // latitude "
-                "([\\S])" +                         // symbol table
-                "([\\d ]{5}[.][\\d ]{2})(E|W)" +    // longitude
+                "([\\d ]{4}[.][\\d ]{2})([NS])" +   // latitude "
+                "(\\S)" +                           // symbol table
+                "([\\d ]{5}[.][\\d ]{2})([EW])" +   // longitude
                 "(\\S)(.+)?" +                      // tail (speed/bearing/altitude/comment)
                 "$", Pattern.DOTALL);
 
@@ -245,14 +254,24 @@ public class AprsDataPositionReport implements AprsData {
         _position.privacyLevel = TextTools.countChars(lat, ' ');
         // NOTE, ambiguity, replace with 0
         lat = lat.replace(' ', '0');
-        _position.latitude = UnitTools.nmeaToDecimal(lat, latSuffix);
+        try {
+            _position.latitude = UnitTools.nmeaToDecimal(lat, latSuffix);
+        } catch (NumberFormatException e) {
+            e.printStackTrace();
+            return false;
+        }
         String table = latLonMatcher.group(3);
         String lon = latLonMatcher.group(4);
         String lonSuffix = latLonMatcher.group(5);
         if (lon == null || lonSuffix == null) return false;
         // NOTE, ambiguity, replace with 0
         lon = lon.replace(' ', '0');
-        _position.longitude = UnitTools.nmeaToDecimal(lon, lonSuffix);
+        try {
+            _position.longitude = UnitTools.nmeaToDecimal(lon, lonSuffix);
+        } catch (NumberFormatException e) {
+            e.printStackTrace();
+            return false;
+        }
         String symbol = latLonMatcher.group(6);
         _position.symbolCode = String.format("%s%s", table, symbol);
         strTail = latLonMatcher.group(7);
@@ -279,22 +298,8 @@ public class AprsDataPositionReport implements AprsData {
         }
         if (strTail == null) return true;
 
-        // read altitude (could be anywhere inside the comment)
-        Pattern altitudePattern = Pattern.compile("^.*(/A=\\d{6}).*$", Pattern.DOTALL);
-        Matcher altitudeMatcher = altitudePattern.matcher(strTail);
-        if (altitudeMatcher.matches()) {
-            String altitude = altitudeMatcher.group(1);
-            if (altitude != null) {
-                strTail = strTail.replaceAll(altitude, "");
-                altitude = altitude.split("=")[1];
-                _position.altitudeMeters = UnitTools.feetToMeters(Long.parseLong(altitude));
-                _position.isAltitudeEnabled = true;
-                _position.hasAltitude = true;
-            }
-        } else {
-            _position.isAltitudeEnabled = false;
-            _position.hasAltitude = false;
-        }
+        // try parse altitude
+        strTail = parseAltitude(strTail);
 
         // read PHG range
         Pattern phgPattern = Pattern.compile("^.*(PHG\\d{4}).*$", Pattern.DOTALL);
@@ -323,6 +328,27 @@ public class AprsDataPositionReport implements AprsData {
         // read comment until the end
         _position.comment = TextTools.stripNulls(strTail);
         return true;
+    }
+
+    private String parseAltitude(String strData) {
+        String strTail = strData;
+        // read altitude (could be anywhere inside the comment)
+        Pattern altitudePattern = Pattern.compile("^.*(/A=\\d{6}).*$", Pattern.DOTALL);
+        Matcher altitudeMatcher = altitudePattern.matcher(strTail);
+        if (altitudeMatcher.matches()) {
+            String altitude = altitudeMatcher.group(1);
+            if (altitude != null) {
+                strTail = strTail.replaceAll(altitude, "");
+                altitude = altitude.split("=")[1];
+                _position.altitudeMeters = UnitTools.feetToMeters(Long.parseLong(altitude));
+                _position.isAltitudeEnabled = true;
+                _position.hasAltitude = true;
+            }
+        } else {
+            _position.isAltitudeEnabled = false;
+            _position.hasAltitude = false;
+        }
+        return strTail;
     }
 
     private double getUncompressedCoordinate(byte[] data, boolean isLatitude) {

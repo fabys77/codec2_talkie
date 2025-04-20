@@ -9,7 +9,6 @@ import android.graphics.Paint;
 import android.graphics.Rect;
 import android.graphics.drawable.BitmapDrawable;
 import android.util.DisplayMetrics;
-import android.util.Log;
 
 import androidx.annotation.NonNull;
 import androidx.room.Entity;
@@ -36,6 +35,7 @@ public class StationItem {
     public double speedMetersPerSecond;
     public String status;
     public String comment;
+    public String deviceIdDescription;
     public String symbolCode;
     public String logLine;
     public int privacyLevel;
@@ -48,6 +48,7 @@ public class StationItem {
 
     public long getTimestampEpoch() { return timestampEpoch; }
 
+    @NonNull
     public String getSrcCallsign() { return srcCallsign; }
 
     public String getDstCallsign() { return dstCallsign; }
@@ -69,6 +70,8 @@ public class StationItem {
     public String getStatus() { return status; }
 
     public String getComment() { return comment; }
+
+    public String getDeviceIdDescription() { return deviceIdDescription; }
 
     public String getSymbolCode() { return symbolCode; }
 
@@ -104,6 +107,8 @@ public class StationItem {
 
     public void setComment(String comment) { this.comment = comment; }
 
+    public void setDeviceIdDescription(String deviceIdDescription) { this.deviceIdDescription = deviceIdDescription; }
+
     public void setSymbolCode(String symbolCode) { this.symbolCode = symbolCode; }
 
     public void setPrivacyLevel(int privacyLevel) { this.privacyLevel = privacyLevel; }
@@ -132,6 +137,8 @@ public class StationItem {
             setStatus(stationItem.getStatus());
         if (stationItem.getComment() != null)
             setComment(stationItem.getComment());
+        if (stationItem.getDeviceIdDescription() != null)
+            setDeviceIdDescription(stationItem.getDeviceIdDescription());
         if (stationItem.getSymbolCode() != null)
             setSymbolCode(stationItem.getSymbolCode());
         if (stationItem.getLogLine() != null)

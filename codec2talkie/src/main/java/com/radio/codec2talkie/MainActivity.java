@@ -62,6 +62,7 @@ import com.radio.codec2talkie.settings.PreferenceKeys;
 import com.radio.codec2talkie.settings.SettingsActivity;
 import com.radio.codec2talkie.storage.message.group.MessageGroupActivity;
 import com.radio.codec2talkie.tools.AudioTools;
+import com.radio.codec2talkie.tools.DeviceIdTools;
 import com.radio.codec2talkie.tools.RadioTools;
 import com.radio.codec2talkie.transport.TransportFactory;
 import com.radio.codec2talkie.connect.UsbConnectActivity;
@@ -89,8 +90,7 @@ public class MainActivity extends AppCompatActivity implements ServiceConnection
             Manifest.permission.BLUETOOTH_ADMIN,
             Manifest.permission.RECORD_AUDIO,
             Manifest.permission.ACCESS_FINE_LOCATION,
-            Manifest.permission.ACCESS_COARSE_LOCATION,
-            Manifest.permission.WRITE_EXTERNAL_STORAGE
+            Manifest.permission.ACCESS_COARSE_LOCATION
     };
 
     private AppService _appService;
@@ -192,6 +192,9 @@ public class MainActivity extends AppCompatActivity implements ServiceConnection
 
         _isAppRestart = false;
         _isAppExit = false;
+
+        // load device id description mapping
+        DeviceIdTools.loadDeviceIdMap(this);
 
         startTransportConnection();
     }
@@ -412,7 +415,7 @@ public class MainActivity extends AppCompatActivity implements ServiceConnection
                 permissionsToRequest.add(permission);
             }
         }
-        if (permissionsToRequest.size() > 0) {
+        if (!permissionsToRequest.isEmpty()) {
             ActivityCompat.requestPermissions(
                     MainActivity.this,
                     permissionsToRequest.toArray(new String[0]),
@@ -514,7 +517,7 @@ public class MainActivity extends AppCompatActivity implements ServiceConnection
             }
         }
 
-        status = status.length() == 0 ? protocolType.toString() : protocolType.toString() + " " + status;
+        status = status.isEmpty() ? protocolType.toString() : protocolType.toString() + " " + status;
 
         String statusLine = AudioTools.getSpeedStatusText(_sharedPreferences, getResources()) + ", " + status;
         _textCodecMode.setText(statusLine);
@@ -713,7 +716,6 @@ public class MainActivity extends AppCompatActivity implements ServiceConnection
             }
             if (allGranted) {
                 Toast.makeText(MainActivity.this, R.string.permissions_granted, Toast.LENGTH_SHORT).show();
-                startUsbConnectActivity();
             } else {
                 Toast.makeText(MainActivity.this, R.string.permissions_denied, Toast.LENGTH_SHORT).show();
                 exitApplication();

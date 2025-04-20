@@ -2,11 +2,9 @@ package com.radio.codec2talkie.storage;
 
 import android.content.Context;
 
-import androidx.room.AutoMigration;
 import androidx.room.Room;
 import androidx.room.RoomDatabase;
 
-import com.radio.codec2talkie.protocol.position.Position;
 import com.radio.codec2talkie.storage.log.LogItem;
 import com.radio.codec2talkie.storage.log.LogItemDao;
 import com.radio.codec2talkie.storage.message.MessageItem;
@@ -20,7 +18,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 @androidx.room.Database(
-    version = 13,
+    version = 14,
     entities = {LogItem.class, MessageItem.class, PositionItem.class, StationItem.class},
     exportSchema = false
 )

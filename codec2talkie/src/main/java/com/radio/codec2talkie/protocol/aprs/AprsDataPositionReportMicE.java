@@ -3,6 +3,7 @@ package com.radio.codec2talkie.protocol.aprs;
 import com.radio.codec2talkie.protocol.aprs.tools.AprsTools;
 import com.radio.codec2talkie.protocol.message.TextMessage;
 import com.radio.codec2talkie.protocol.position.Position;
+import com.radio.codec2talkie.tools.DeviceIdTools;
 import com.radio.codec2talkie.tools.TextTools;
 import com.radio.codec2talkie.tools.UnitTools;
 
@@ -20,7 +21,7 @@ public class AprsDataPositionReportMicE implements AprsData {
     private byte[] _binary;
     private boolean _isValid;
 
-    private final Map<String, Integer> _miceMessageTypeMap = new HashMap<String, Integer>() {{
+    private final Map<String, Integer> _miceMessageTypeMap = new HashMap<>() {{
         // standard
         put("off_duty", 0b111);
         put("en_route", 0b110);
@@ -41,7 +42,7 @@ public class AprsDataPositionReportMicE implements AprsData {
         put("emergency", 0b000);
     }};
 
-    private final Map<Integer, String> _miceMessageReverseTypeMapStd = new HashMap<Integer, String>() {{
+    private final Map<Integer, String> _miceMessageReverseTypeMapStd = new HashMap<>() {{
         put(0b000, "emergency");
         put(0b111, "off_duty");
         put(0b110, "en_route");
@@ -52,7 +53,7 @@ public class AprsDataPositionReportMicE implements AprsData {
         put(0b001, "priority");
     }};
 
-    private final Map<Integer, String> _miceMessageReverseTypeMapCustom = new HashMap<Integer, String>() {{
+    private final Map<Integer, String> _miceMessageReverseTypeMapCustom = new HashMap<>() {{
         put(0b000, "emergency");
         put(0b111, "custom_0");
         put(0b110, "custom_1");
@@ -108,7 +109,7 @@ public class AprsDataPositionReportMicE implements AprsData {
         }
 
         // comment
-        buffer.put(position.comment.getBytes());
+        buffer.put(position.comment.getBytes(StandardCharsets.UTF_8));
 
         // return
         buffer.flip();
@@ -191,7 +192,12 @@ public class AprsDataPositionReportMicE implements AprsData {
             latitude.append(c);
         }
 
-        _position.latitude = UnitTools.nmeaToDecimal(latitude.toString(), Character.toString(ns));
+        try {
+            _position.latitude = UnitTools.nmeaToDecimal(latitude.toString(), Character.toString(ns));
+        } catch (NumberFormatException e) {
+            e.printStackTrace();
+            return;
+        }
         _position.status = isCustom
                 ? _miceMessageReverseTypeMapCustom.get(messageId)
                 : _miceMessageReverseTypeMapStd.get(messageId);
@@ -207,7 +213,12 @@ public class AprsDataPositionReportMicE implements AprsData {
         int h = ((int)infoData[2] - 28);
 
         String longitude = String.format(Locale.US, "%03d%02d.%02d", d, m, h);
-        _position.longitude = UnitTools.nmeaToDecimal(longitude, Character.toString(we));
+        try {
+            _position.longitude = UnitTools.nmeaToDecimal(longitude, Character.toString(we));
+        } catch (NumberFormatException e) {
+            e.printStackTrace();
+            return;
+        }
 
         // read course/speed
         int sp = 10 * ((int)infoData[3] - 28);
@@ -230,12 +241,30 @@ public class AprsDataPositionReportMicE implements AprsData {
         // read symbol table + symbol code
         _position.symbolCode = String.format(Locale.US, "%c%c", infoData[7], infoData[6]);
 
-        if (infoData.length > 11 && infoData[11] == '}') {
-            _position.hasAltitude = true;
-            _position.altitudeMeters = ((infoData[8] - 33) * 91 * 91 + (infoData[9] - 33) * 91 + (infoData[10] - 33)) - 10000;
-            _position.comment = TextTools.stripNulls(new String(Arrays.copyOfRange(infoData, 12, infoData.length), StandardCharsets.UTF_8));
-        } else {
-            _position.comment = TextTools.stripNulls(new String(Arrays.copyOfRange(infoData, 8, infoData.length), StandardCharsets.UTF_8));
+        // read altitude, comment and device id
+        int i = 8;
+        if (infoData.length > i) {
+            char c = (char)infoData[i];
+            if (c == '`' || c == '\'' || c == '>' || c == ']') {
+                i++;
+            }
+            if (infoData.length > i + 3 && (char)infoData[i + 3] == '}') {
+                _position.hasAltitude = true;
+                _position.altitudeMeters = ((infoData[i] - 33) * 91 * 91 + (infoData[i + 1] - 33) * 91 + (infoData[i + 2] - 33)) - 10000;
+                i += 3;
+            } else {
+                i--;
+            }
+            String comment = new String(Arrays.copyOfRange(infoData, i + 1, infoData.length), StandardCharsets.UTF_8).strip();
+            if (comment.length() >= 2) {
+                String deviceId = comment.substring(comment.length() - 2);
+                String deviceIdDescription = DeviceIdTools.getMiceDeviceDescription(deviceId);
+                if (deviceIdDescription != null) {
+                    _position.deviceIdDescription = deviceIdDescription;
+                    comment = comment.substring(0, comment.length() - 2);
+                }
+            }
+            _position.comment = TextTools.stripNulls(comment);
         }
 
         _position.maidenHead = UnitTools.decimalToMaidenhead(_position.latitude, _position.longitude);

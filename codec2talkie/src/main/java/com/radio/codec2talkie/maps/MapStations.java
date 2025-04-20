@@ -2,13 +2,8 @@ package com.radio.codec2talkie.maps;
 
 import android.content.Context;
 import android.graphics.Bitmap;
-import android.graphics.Canvas;
-import android.graphics.Color;
-import android.graphics.Matrix;
 import android.graphics.Paint;
-import android.graphics.Rect;
 import android.graphics.drawable.BitmapDrawable;
-import android.util.DisplayMetrics;
 import android.util.Log;
 
 import androidx.lifecycle.LifecycleOwner;
@@ -16,7 +11,6 @@ import androidx.lifecycle.LiveData;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.lifecycle.ViewModelStoreOwner;
 
-import com.radio.codec2talkie.R;
 import com.radio.codec2talkie.protocol.aprs.tools.AprsSymbolTable;
 import com.radio.codec2talkie.protocol.position.Position;
 import com.radio.codec2talkie.storage.position.PositionItemViewModel;
@@ -67,7 +61,7 @@ public class MapStations {
         _positionItemViewModel = new ViewModelProvider(_owner).get(PositionItemViewModel.class);
 
         _aprsSymbolTable = AprsSymbolTable.getInstance(context);
-        _infoWindow = new MarkerInfoWindow(R.layout.bonuspack_bubble, _mapView);
+        _infoWindow = new MarkerInfoWindow(org.osmdroid.library.R.layout.bonuspack_bubble, _mapView);
         _activeTrack = new MapTrack(_context, _mapView, _owner);
 
         _stationItemViewModel = new ViewModelProvider(_owner).get(StationItemViewModel.class);
@@ -87,8 +81,12 @@ public class MapStations {
                 //        station.getDstCallsign() + " " + station.getLatitude() + " " + station.getLongitude());
                 // do not add items without coordinate
                 if (station.getMaidenHead() == null) continue;
-                if (addStationPositionIcon(station)) {
-                    addRangeCircle(station);
+                try {
+                    if (addStationPositionIcon(station)) {
+                        addRangeCircle(station);
+                    }
+                } catch (Exception e) {
+                    e.printStackTrace();
                 }
             }
         });
@@ -148,7 +146,7 @@ public class MapStations {
         String callsign = group.getSrcCallsign();
         Marker marker = null;
 
-        String newTitle = DateTools.epochToIso8601(group.getTimestampEpoch()) + " " + callsign;
+        String newTitle = callsign + " " + DateTools.epochToIso8601(group.getTimestampEpoch());
         String newSnippet = getStatus(group);
 
         // find old marker
@@ -201,15 +199,28 @@ public class MapStations {
 
     private String getStatus(StationItem station) {
         double range = UnitTools.milesToKilometers(station.getRangeMiles());
-        return String.format(Locale.US, "%s %s<br>%s %f %f<br>%03d° %03dkm/h %04dm %.2fkm<br>%s %s",
-                station.getDstCallsign(),
-                station.getDigipath(),
+
+        // position, speed, altitude
+        String data = String.format(Locale.US, "%s %f %f<br><b>%03d° %03dkm/h alt %04dm range %.2fkm</b>",
                 station.getMaidenHead(), station.getLatitude(), station.getLongitude(),
                 (int)station.getBearingDegrees(),
                 UnitTools.metersPerSecondToKilometersPerHour((int)station.getSpeedMetersPerSecond()),
                 (int)station.getAltitudeMeters(),
-                range == 0 ? UnitTools.milesToKilometers(Position.DEFAULT_RANGE_MILES): range,
-                station.getStatus(),
-                station.getComment());
+                range == 0 ? UnitTools.milesToKilometers(Position.DEFAULT_RANGE_MILES): range);
+
+        // status + comment
+        String status = station.getStatus();
+        String comment = station.getComment();
+        if (!status.isBlank() || !comment.isBlank())
+            data += "<br><i><font color='#006400'>" + status + " " + comment + "</font></i></hr>";
+
+        // device id description
+        String deviceIdDescription = station.getDeviceIdDescription();
+        if (deviceIdDescription != null && !deviceIdDescription.isEmpty())
+            data += "<br><small>(" + deviceIdDescription + ")</small>";
+
+        // raw target and digipath
+        data += "<br><small>[" + station.getDstCallsign() + " " + station.getDigipath() + "]</small>";
+        return data;
     }
 }

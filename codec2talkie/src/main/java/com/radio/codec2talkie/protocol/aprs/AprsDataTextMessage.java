@@ -94,7 +94,7 @@ public class AprsDataTextMessage implements AprsData {
             }
         } else {
             // message requires acknowledge {xxxxx (for auto ack)
-            p = Pattern.compile("^.+[{](\\d+){1,5}$", Pattern.DOTALL);
+            p = Pattern.compile("^(.+)[{](\\d+){1,5}$", Pattern.DOTALL);
             m = p.matcher(stringMessage);
             if (m.find()) {
                 this.textMessage = m.group(1);
@@ -114,8 +114,8 @@ public class AprsDataTextMessage implements AprsData {
     @Override
     public byte[] toBinary() {
         return (ackId > 0)
-                ? String.format(Locale.US, ":%-9s:%s{%d", dstCallsign, textMessage, ackId).getBytes()
-                : String.format(":%-9s:%s", dstCallsign, textMessage).getBytes();
+                ? String.format(Locale.US, ":%-9s:%s{%d", dstCallsign, textMessage, ackId).getBytes(StandardCharsets.UTF_8)
+                : String.format(":%-9s:%s", dstCallsign, textMessage).getBytes(StandardCharsets.UTF_8);
     }
 
     @Override
