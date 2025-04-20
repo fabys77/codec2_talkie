@@ -1,4 +1,4 @@
-name: Android CI
+name: Android CI Unsigned
 
 on:
   workflow_dispatch:
