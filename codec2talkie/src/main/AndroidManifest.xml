@@ -97,5 +97,8 @@
         <activity
             android:name=".settings.SettingsActivity"
             android:configChanges="orientation|screenSize" />
+        <meta-data
+        android:name="android.allowFullScreenIntent"
+        android:value="true" />
     </application>
 </manifest>
